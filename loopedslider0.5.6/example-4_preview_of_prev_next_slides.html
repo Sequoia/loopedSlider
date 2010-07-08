@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>loopedSlider jQuery Plugin 0.5.6</title>
+	<script src="jquery-1.4.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="loopedslider.js" type="text/javascript" charset="utf-8"></script>
+	
+	<style type="text/css" media="screen">	
+		/*
+		 * Required 
+		*/
+		.container { width:500px; height:375px; overflow:hidden; position:relative; cursor:pointer; }
+		.slides { position:absolute; top:0; left:0; }
+		.slides > div { position:absolute; top:0; width:500px; display:none; }
+		/*
+		 * Optional
+		*/
+		#loopedSlider,#newsSlider { margin:0 auto; width:820px; position:relative; clear:both; }
+		ul.pagination { list-style:none; padding:0; margin:0; }
+		ul.pagination li  { float:left; }
+		ul.pagination li a { padding:2px 4px; }
+		ul.pagination li.active a { background:blue; color:white; }
+		
+		/*FOR SIDE PREVIEWS*/
+		div.slides{margin-left:150px;margin-top:10px;}
+		div.container{width:820px;position:relative;height:400px;border:solid 2px black;}
+		a.navlink{display:block;position:absolute;height:400px;width:160px;background-color:#000;opacity:.9;text-indent:-99999px;border:none;}
+		a.navlink:focus{outline:0;}
+		div.container a.previous{left:0;top:0;
+			background:-webkit-gradient(linear,left top,right top,color-stop(0, rgb(0,0,0)),color-stop(1, rgba(0,0,0,0)));
+			background:-moz-linear-gradient(left center,rgb(0,0,0) 0%,rgba(0,0,0,0) 100%);
+		}
+		div.container a.next{right:0;top:0;
+			background:-webkit-gradient(linear,right top,left top,color-stop(0, rgb(0,0,0)),color-stop(1, rgba(0,0,0,0)));
+			background:-moz-linear-gradient(right center,rgb(0,0,0) 0%,rgba(0,0,0,0) 100%);
+		}
+		div.slides div{padding:0 10px;}
+	</style>
+</head>
+
+<body>
+<div id="loopedSlider">	
+	<div class="container">
+		<div class="slides">
+			<div><img src="image-01.jpg" width="500" height="375" alt="First Image" /></div>
+			<div><img src="image-02.jpg" width="500" height="375" alt="Second Image" /></div>
+			<div><img src="image-03.jpg" width="500" height="375" alt="Third Image" /></div>
+			<div><img src="image-04.jpg" width="500" height="375" alt="Fourth Image" /></div>
+			<div><img src="image-01.jpg" width="500" height="375" alt="First Image" /></div>
+			<div><img src="image-02.jpg" width="500" height="375" alt="Second Image" /></div>
+			<div><img src="image-03.jpg" width="500" height="375" alt="Third Image" /></div>
+			<div><img src="image-04.jpg" width="500" height="375" alt="Fourth Image" /></div>
+		</div>
+	<a href="#" class="previous navlink">previous</a>
+	<a href="#" class="next navlink">next</a>
+	</div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+	$(function(){
+		// Option set as a global variable
+		$.fn.loopedSlider.defaults.addPagination = true;
+		$('#loopedSlider').loopedSlider({
+			 'containerClick':function(arg){alert('I added the ability to pass a callback to the main frame click... not really related to the other change.')}
+			,'autoStart':3000
+			,'restart':5000
+			,'addPagination':false
+		});
+	});
+</script>
+
+</body>
+</html>

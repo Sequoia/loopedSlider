@@ -119,15 +119,20 @@ if(typeof jQuery != 'undefined') {
 					if (o.containerClick) {
 						$(o.container,$t).click(function(){
 							if(active===false) {
-								animate("next",true);
-								if(o.autoStart){
-									if (o.restart) {autoStart();}
-									else {clearInterval(sliderIntervalID);}
+								if(typeof o.containerClick === "function") { //if they pass a function, run it
+									o.containerClick();
+								}
+								else{ 
+									//sm_com use existing behaviour if containerClick is true
+									animate("next",true);
+									if(o.autoStart){
+										if (o.restart) {autoStart();}
+										else {clearInterval(sliderIntervalID);}
+									}
 								}
 							} return false;
 						});
 					}
-
 					$(pagination,$t).click(function(){
 						if ($(this).parent().hasClass("active")) {return false;}
 						else {
@@ -177,9 +182,18 @@ if(typeof jQuery != 'undefined') {
 						var getHeight = $(o.slides,$t).children(":eq("+(times-1)+")",$t).outerHeight();
 						$(o.container,$t).animate({height: getHeight},o.autoHeight);					
 					};		
-
+/**sm_com
+			I wanted to be able to see the slide before and after the current slide.
+			Before, the upcoming slide was moved then other slides were positioned around it.
+			I needed the other slides around it to be positioned BEFORE the move happened.
+			This required taking the "repositioning" of the surrounding slides
+			and moving it OUT of the animate callback.
+			
+			the main changes I made are in the animate function.
+/sm_com*/
 					function animate(dir,clicked){	
-						active = true;	
+						active = true;
+						var penultimateOffset=false;
 						switch(dir){
 							case "next":
 								times = times+1;
@@ -189,18 +203,30 @@ if(typeof jQuery != 'undefined') {
 								if(slides<3){
 									if (times===3){$(o.slides,$t).children(":eq(0)").css({left:(slides*width)});}
 									if (times===2){$(o.slides,$t).children(":eq("+(slides-1)+")").css({position:"absolute",left:width});}
-								}
-								$(o.slides,$t).animate({left: distance}, o.slidespeed,function(){
-									if (times===slides+1) {
+								}	
+								if (times===slides+1) { //sm_com end of stack, moving to next beginning
 										times = 1;
-										$(o.slides,$t).css({left:0},function(){$(o.slides,$t).animate({left:distance})});							
-										$(o.slides,$t).children(":eq(0)").css({left:0});
-										$(o.slides,$t).children(":eq("+(slides-1)+")").css({ position:"absolute",left:-width});				
+										$(o.slides,$t).css({left:width},function(){$(o.slides,$t).animate({left:distance})});//sm_com moves stack left (back to init point, {left:0})
+										$(o.slides,$t).children(":eq(0)").css({left:0});//sm_com moves first slide to the beginning of the stack {left:0} 
+										$(o.slides,$t).children(":eq("+(slides-1)+")").css({ position:"absolute",left:-width});//sm_com moves FINAL slide to the beginning, ofsetting it left the width of a slide
+										//save the current penultimate position, move it temporarily, then move it back
+										penultimateOffset = $(o.slides,$t).children(":eq("+(slides-2)+")").css('left');
+										$(o.slides,$t).children(":eq("+(slides-2)+")").css({ position:"absolute",left:-width*2});//move penultimate slide before current slide in order to not "flash" it out.
+										distance=0;
+								}
+								if (times===slides){//first before last (moving to 7 of 8), last is far LEFT
+									$(o.slides,$t).children(":eq(0)").css({left:(slides*width)});
+								}//sm_com
+								if (times===slides-1){
+									$(o.slides,$t).children(":eq("+(slides-1)+")").css({left:(slides*width-width)});
+								}//sm_com
+								$(o.slides,$t).animate({left: distance}, o.slidespeed,
+									function(){//sm_com animate the stack
+									if(penultimateOffset){
+										$(o.slides,$t).children(":eq("+(slides-2)+")").css({left:penultimateOffset});//move penultimate slide back
 									}
-									if (times===slides) $(o.slides,$t).children(":eq(0)").css({left:(slides*width)});
-									if (times===slides-1) $(o.slides,$t).children(":eq("+(slides-1)+")").css({left:(slides*width-width)});
 									active = false;
-								});					
+								});
 								break; 
 							case "prev":
 								times = times-1;
@@ -211,15 +237,28 @@ if(typeof jQuery != 'undefined') {
 									if(times===0){$(o.slides,$t).children(":eq("+(slides-1)+")").css({position:"absolute",left:(-width)});}
 									if(times===1){$(o.slides,$t).children(":eq(0)").css({position:"absolute",left:0});}
 								}
-								$(o.slides,$t).animate({left: distance}, o.slidespeed,function(){
+								
+								
 									if (times===0) {
 										times = slides;
-										$(o.slides,$t).children(":eq("+(slides-1)+")").css({position:"absolute",left:(slides*width-width)});
-										$(o.slides,$t).css({left: -(slides*width-width)});
-										$(o.slides,$t).children(":eq(0)").css({left:(slides*width)});
+										//save the current penultimate position, move it temporarily, then move it back
+										penultimateOffset = $(o.slides,$t).children(":eq("+(slides-2)+")").css('left');
+										$(o.slides,$t).children(":eq("+(slides-2)+")").css({ position:"absolute",left:-width*2});//move penultimate slide before current slide in order
 									}
-									if (times===2 ) $(o.slides,$t).children(":eq(0)").css({position:"absolute",left:0});
-									if (times===1) $(o.slides,$t).children(":eq("+ (slides-1) +")").css({position:"absolute",left:-width});
+									if (times===2 ){ 
+										$(o.slides,$t).children(":eq(0)").css({position:"absolute",left:0});
+									}
+									if (times===1){
+										$(o.slides,$t).children(":eq("+ (slides-1) +")").css({position:"absolute",left:-width});
+									}
+								
+								$(o.slides,$t).animate({left: distance}, o.slidespeed,function(){
+									if(penultimateOffset){
+										$(o.slides,$t).children(":eq("+(slides-2)+")").css({left:penultimateOffset})//move penultimate slide back (step 3)
+										$(o.slides,$t).children(":eq(0)").css({left:(slides*width)});//step 4
+										$(o.slides,$t).children(":eq("+(slides-1)+")").css({position:"absolute",left:(slides*width-width)});//move final into correct position
+										$(o.slides,$t).css({left: -(slides*width-width)});//move stack back into proper position (stp 5)
+									}
 									active = false;
 								});
 								break;
